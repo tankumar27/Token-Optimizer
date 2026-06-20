@@ -25,7 +25,7 @@ $env:GEMINI_API_KEY="your key"
 uvicorn app.main:app --reload
 ```
 
-Dashboard: <http://127.0.0.1:8000/dashboard>
+
 
 ## Dry-Run Vs Live
 
