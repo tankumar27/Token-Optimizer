@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Cost Optimization Middleware</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>AI Cost Optimization Middleware</h1>
+      <p>Developer-facing validation dashboard for cost reduction, RAG optimization, quality checks, robustness, and pilot readiness.</p>
+    </div>
+    <button id="refresh">Refresh</button>
+  </header>
+
+  <main>
+    <section class="banner">Dry-run validates middleware mechanics only. It does not prove real model output quality.</section>
+
+    <section class="grid cards" id="cards">
+      <article><span>Server</span><strong id="server-status">checking</strong></article>
+      <article><span>Total requests</span><strong id="total-requests">0</strong></article>
+      <article><span>Original tokens</span><strong id="original-tokens">0</strong></article>
+      <article><span>Optimized tokens</span><strong id="optimized-tokens">0</strong></article>
+      <article><span>Tokens saved</span><strong id="tokens-saved">0</strong></article>
+      <article><span>Savings</span><strong id="savings-percent">0%</strong></article>
+      <article><span>Cost saved</span><strong id="cost-saved">$0</strong></article>
+      <article><span>Cache hit rate</span><strong id="cache-hit-rate">0%</strong></article>
+      <article><span>Readiness</span><strong id="readiness-score">0</strong></article>
+      <article><span>Quality failures, last 500 traces</span><strong id="quality-failures">0</strong></article>
+      <article><span>Protected failures, last 500 traces</span><strong id="protected-failures">0</strong></article>
+    </section>
+
+    <section class="panel optimizer">
+      <h2>Prompt Optimizer</h2>
+      <div class="form-grid">
+        <label>System prompt<textarea id="system-prompt">You are a careful support assistant. Do not promise approval. Do not promise approval.</textarea></label>
+        <label>User prompt<textarea id="user-prompt">Retrieved context chunk 1:
+Refunds over $500 require Finance approval. Contact finance@example.com.
+Retrieved context chunk 2:
+Refunds over $500 require Finance approval. Contact finance@example.com.
+Please please kindly kindly answer for ORD-900184.</textarea></label>
+        <label>Compression<select id="compression"><option>safe</option><option>balanced</option><option>aggressive</option></select></label>
+        <label>Provider<select id="provider"><option value="dry-run">Dry-run</option><option value="gemini">Gemini Flash</option><option value="openai">OpenAI</option></select></label>
+        <label>Mode<select id="mode"><option value="dry-run">dry-run</option><option value="live">live</option></select></label>
+        <label>Model override<input id="model" placeholder="optional model"></label>
+        <button id="optimize">Optimize</button>
+      </div>
+      <div class="split">
+        <pre id="optimize-summary"></pre>
+        <pre id="optimized-prompt"></pre>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Duplicate Chunk Graph</h2>
+      <table id="duplicate-graph"><thead><tr><th>Canonical</th><th>Duplicate</th><th>Similarity</th><th>Saved</th><th>Gate</th><th>Decision</th></tr></thead><tbody></tbody></table>
+    </section>
+
+    <section class="panel">
+      <h2>Candidate Inspection</h2>
+      <table id="candidate-table"><thead><tr><th>Status</th><th>Type</th><th>Span</th><th>Retained</th><th>Score</th><th>Reason</th><th>Risk flags</th></tr></thead><tbody></tbody></table>
+    </section>
+
+    <section class="panel">
+      <h2>Concept Aggregation</h2>
+      <table id="concept-table"><thead><tr><th>Status</th><th>Theme</th><th>Concepts</th><th>Aggregate</th><th>Similarity</th><th>Saved</th><th>Reason</th></tr></thead><tbody></tbody></table>
+    </section>
+
+    <section class="panel">
+      <h2>Information Representation</h2>
+      <table id="information-table"><thead><tr><th>Status</th><th>Theme</th><th>Units</th><th>Minimum Representation</th><th>Recall</th><th>Saved</th><th>Reason</th></tr></thead><tbody></tbody></table>
+    </section>
+
+    <section class="panel">
+      <h2>Semantic Cache</h2>
+      <pre id="cache-output"></pre>
+    </section>
+
+    <section class="panel">
+      <h2>Provider And Cost</h2>
+      <pre id="cost-output"></pre>
+    </section>
+
+    <section class="panel">
+      <h2>Benchmark</h2>
+      <button id="run-benchmark">Run benchmark</button>
+      <table id="benchmark-table"><thead><tr><th>Suite</th><th>Category</th><th>Original</th><th>Optimized</th><th>Savings</th><th>Accepted</th><th>Cost saved</th><th>Backend</th></tr></thead><tbody></tbody></table>
+    </section>
+
+    <section class="panel">
+      <h2>Quality Evaluation</h2>
+      <button id="run-quality">Run quality evaluation</button>
+      <table id="quality-table"><thead><tr><th>Mode</th><th>Provider</th><th>Similarity</th><th>Numbers</th><th>Latency</th></tr></thead><tbody></tbody></table>
+    </section>
+
+    <section class="panel">
+      <h2>Robustness</h2>
+      <button id="run-robustness">Run robustness</button>
+      <table id="robustness-table"><thead><tr><th>Case</th><th>Accepted</th><th>Savings</th><th>Protected</th><th>Reason</th></tr></thead><tbody></tbody></table>
+    </section>
+
+    <section class="panel">
+      <h2>Company Pilot</h2>
+      <button id="run-pilot">Run pilot</button>
+      <button id="run-report">Generate report</button>
+      <pre id="pilot-output"></pre>
+    </section>
+
+    <section class="panel">
+      <h2>Analytics And Traces</h2>
+      <table id="traces-table"><thead><tr><th>Time</th><th>Request</th><th>Savings</th><th>Accepted</th><th>Backends</th></tr></thead><tbody></tbody></table>
+    </section>
+
+    <section class="panel error" id="error"></section>
+  </main>
+  <script src="/static/dashboard.js?v=20260620-llm-lingua"></script>
+</body>
+</html>
