@@ -15,10 +15,17 @@ def _cors_origins() -> list[str]:
     return [origin.strip() for origin in raw.split(",") if origin.strip()] or ["*"]
 
 
+def _request_size_limit_bytes() -> int:
+    configured = int(os.getenv("REQUEST_SIZE_LIMIT_BYTES", "5000000"))
+    if os.getenv("RENDER"):
+        return max(configured, 5000000)
+    return configured
+
+
 class Settings(BaseModel):
     app_name: str = "AI Cost Optimization Middleware"
     database_path: str = Field(default_factory=lambda: os.getenv("DATABASE_PATH", _default_database_path()))
-    request_size_limit_bytes: int = Field(default_factory=lambda: int(os.getenv("REQUEST_SIZE_LIMIT_BYTES", "1000000")))
+    request_size_limit_bytes: int = Field(default_factory=_request_size_limit_bytes)
     cors_origins: list[str] = Field(default_factory=_cors_origins)
     gemini_api_key: str | None = Field(default_factory=lambda: os.getenv("GEMINI_API_KEY"))
     gemini_model: str = Field(default_factory=lambda: os.getenv("GEMINI_MODEL", "gemini-2.5-flash"))

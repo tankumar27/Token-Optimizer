@@ -19,6 +19,8 @@ services:
         value: cpu
       - key: LLM_LINGUA_MAX_INPUT_TOKENS
         value: "900"
+      - key: REQUEST_SIZE_LIMIT_BYTES
+        value: "5000000"
       - key: DATABASE_PATH
         value: /tmp/app.sqlite3
       - key: CORS_ORIGINS
