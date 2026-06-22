@@ -78,7 +78,10 @@ def llm_lingua_backend(text: str, level: str, provider: str, mode: str) -> tuple
 
     settings = get_settings()
     input_tokens = count_tokens(text)
-    render_model_disabled = bool(os.getenv("RENDER")) and not settings.enable_render_llm_lingua_model
+    render_model_disabled = (
+        os.getenv("ENABLE_RENDER_LLM_LINGUA_MODEL") == "0"
+        or (bool(os.getenv("RENDER")) and not settings.enable_render_llm_lingua_model)
+    )
     model_allowed = (
         settings.enable_llm_lingua
         and not render_model_disabled
