@@ -76,7 +76,25 @@ def llm_lingua_backend(text: str, level: str, provider: str, mode: str) -> tuple
         candidates.append(LinguaCandidate("deterministic_token_cleanup", local_text, local_trace))
 
     settings = get_settings()
-    if settings.enable_llm_lingua:
+    input_tokens = count_tokens(text)
+    model_allowed = settings.enable_llm_lingua and input_tokens <= settings.llm_lingua_max_input_tokens
+    if settings.enable_llm_lingua and not model_allowed:
+        pre_rejected_traces.append(_trace(
+            original=text,
+            candidate=text,
+            source=settings.llm_lingua_backend,
+            accepted=False,
+            reason=f"LLMLingua skipped for large prompt ({input_tokens} tokens > {settings.llm_lingua_max_input_tokens} token limit)",
+            validation={},
+            generator_trace={
+                "generator": settings.llm_lingua_backend,
+                "accepted": False,
+                "reason": "large_prompt_skip",
+                "input_tokens": input_tokens,
+                "max_input_tokens": settings.llm_lingua_max_input_tokens,
+            },
+        ))
+    if model_allowed:
         model_text, model_trace = _model_candidate(text, level, provider, mode)
         if model_text and model_text != text:
             candidates.append(LinguaCandidate(model_trace["generator"], model_text, model_trace))
