@@ -16,7 +16,7 @@ class Settings(BaseModel):
     request_size_limit_bytes: int = Field(default_factory=lambda: int(os.getenv("REQUEST_SIZE_LIMIT_BYTES", "1000000")))
     cors_origins: list[str] = ["*"]
     gemini_api_key: str | None = Field(default_factory=lambda: os.getenv("GEMINI_API_KEY"))
-    gemini_model: str = Field(default_factory=lambda: os.getenv("GEMINI_MODEL", "gemini-1.5-flash"))
+    gemini_model: str = Field(default_factory=lambda: os.getenv("GEMINI_MODEL", "gemini-2.5-flash"))
     openai_api_key: str | None = Field(default_factory=lambda: os.getenv("OPENAI_API_KEY"))
     openai_model: str = Field(default_factory=lambda: os.getenv("OPENAI_MODEL", "gpt-4o-mini"))
     enable_llm_lingua: bool = Field(default_factory=lambda: os.getenv("ENABLE_LLM_LINGUA", "0") == "1")

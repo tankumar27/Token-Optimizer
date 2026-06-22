@@ -19,6 +19,19 @@ function showError(error) {
   box.textContent = error.message || String(error);
 }
 
+function money(value) {
+  const number = Number(value || 0);
+  if (number === 0) return "$0.000000";
+  return `$${number.toFixed(6)}`;
+}
+
+function providerUsageText(usage) {
+  if (!usage) return "none";
+  const prompt = usage.prompt_tokens ?? "?";
+  const output = usage.completion_tokens ?? "?";
+  return `${prompt} in / ${output} out`;
+}
+
 async function refresh() {
   try {
     $("server-status").textContent = (await api("/health")).status;
@@ -50,11 +63,28 @@ $("optimize").addEventListener("click", async () => {
       mode: $("mode").value,
       model: $("model").value || null,
     };
-    const data = await api("/optimize", { method: "POST", body: JSON.stringify(payload) });
+    const live = payload.mode === "live" && payload.provider !== "dry-run";
+    const raw = await api(live ? "/v1/chat/completions" : "/optimize", { method: "POST", body: JSON.stringify(payload) });
+    const data = live ? raw.middleware : raw;
+    const providerUsage = raw.usage || data.traces.provider_usage || null;
+    const answer = live ? ((raw.choices || [])[0]?.message?.content || "") : "";
+    $("original-cost").textContent = money(data.cost.estimated_original_total_with_output ?? data.cost.estimated_cost_before);
+    $("optimized-cost").textContent = money(data.cost.estimated_optimized_total_with_output ?? data.cost.estimated_cost_after);
+    $("cost-saved").textContent = money(data.cost.total_estimated_savings ?? data.cost.prompt_compression_savings);
+    $("provider-usage").textContent = providerUsageText(providerUsage);
     $("optimize-summary").textContent = JSON.stringify({
       original_tokens: data.original_tokens,
       optimized_tokens: data.optimized_tokens,
+      tokens_saved: Math.max(0, data.original_tokens - data.optimized_tokens),
       savings_percent: data.savings_percent,
+      live_provider: raw.provider || data.traces.live_provider || payload.provider,
+      model: raw.model || payload.model || data.route_decision?.selected_model,
+      provider_usage: providerUsage,
+      original_cost: data.cost.estimated_original_total_with_output ?? data.cost.estimated_cost_before,
+      optimized_cost: data.cost.estimated_optimized_total_with_output ?? data.cost.estimated_cost_after,
+      estimated_cost_saved: data.cost.total_estimated_savings ?? data.cost.prompt_compression_savings,
+      pricing_basis: data.cost.pricing_basis,
+      provider_price_key: data.cost.provider_price_key,
       backend_used: data.backend_used,
       prompt_analysis: data.traces.prompt_analysis,
       strategy_decision: data.traces.strategy_decision,
@@ -72,8 +102,16 @@ $("optimize").addEventListener("click", async () => {
       safety_checks: data.quality_gate_status.message_results,
     }, null, 2);
     $("optimized-prompt").textContent = data.optimized_messages.map(m => `${m.role}: ${m.content}`).join("\n\n");
+    $("provider-answer").textContent = live ? `Live provider answer:\n${answer}` : "Structural validation only. Switch Mode to live and Provider to Gemini Flash for a real Gemini call.";
     $("cache-output").textContent = JSON.stringify(data.traces.semantic_cache || { exact_hit: false, semantic_hit: false, rejection_reason: "not checked during optimize-only" }, null, 2);
-    $("cost-output").textContent = JSON.stringify({ cost: data.cost, route_decision: data.route_decision, mode: payload.mode === "live" ? "Live provider validation." : "Structural validation only." }, null, 2);
+    $("cost-output").textContent = JSON.stringify({
+      cost: data.cost,
+      route_decision: data.route_decision,
+      provider_usage: providerUsage,
+      provider: raw.provider || payload.provider,
+      model: raw.model || payload.model || data.route_decision?.selected_model,
+      mode: live ? "Live provider validation." : "Structural validation only.",
+    }, null, 2);
     rows("duplicate-graph", data.duplicate_chunk_graph.map(g => `<tr><td>${g.canonical_chunk}</td><td>${g.duplicate_chunk}</td><td>${g.similarity}</td><td>${g.estimated_saved_tokens}</td><td>${g.contradiction_gate}</td><td>${g.decision}</td></tr>`).join(""));
     const candidates = data.removed_or_changed_text.flatMap(item => {
       const output = [];

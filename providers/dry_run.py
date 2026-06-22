@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from app.config import get_settings
+from optimizer.token_counter import count_message_tokens, count_tokens
 from .base import BaseProvider, ProviderResult
 
 
@@ -16,5 +17,10 @@ class DryRunProvider(BaseProvider):
             "provider": self.name,
             "model": model or "dry-run",
             "choices": [{"index": 0, "message": {"role": "assistant", "content": content}, "finish_reason": "stop"}],
+            "usage": {
+                "prompt_tokens": count_message_tokens(messages),
+                "completion_tokens": count_tokens(content),
+                "total_tokens": count_message_tokens(messages) + count_tokens(content),
+            },
             "warning": get_settings().dry_run_warning,
         })

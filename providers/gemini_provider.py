@@ -40,8 +40,15 @@ class GeminiProvider(BaseProvider):
         if candidates:
             parts = candidates[0].get("content", {}).get("parts", [])
             text = "".join(part.get("text", "") for part in parts)
+        usage = data.get("usageMetadata") or {}
         return ProviderResult({
             "provider": self.name,
             "model": model_name,
             "choices": [{"index": 0, "message": {"role": "assistant", "content": text}, "finish_reason": "stop"}],
+            "usage": {
+                "prompt_tokens": usage.get("promptTokenCount"),
+                "completion_tokens": usage.get("candidatesTokenCount"),
+                "total_tokens": usage.get("totalTokenCount"),
+            },
+            "usage_metadata": usage,
         })

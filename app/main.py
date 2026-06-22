@@ -18,6 +18,8 @@ from benchmark import run_benchmark
 from demo import company_pilot_sim, generate_demo_report, readiness_score
 from evaluation import evaluate_quality
 from optimizer.pipeline import optimize_messages
+from optimizer.cost_model import live_cost_report
+from optimizer.token_counter import count_tokens
 from providers.dry_run import DryRunProvider
 from providers.gemini_provider import GeminiProvider
 from providers.openai_provider import OpenAIProvider
@@ -187,6 +189,25 @@ async def chat_completions(payload: dict) -> dict:
 
     provider = _provider_for(req.provider, req.mode)
     provider_result = await provider.complete(_messages_to_dict(opt["optimized_messages"]), selected_model, req.temperature)
+    usage = dict(provider_result).get("usage") or {}
+    completion_text = ""
+    choices = dict(provider_result).get("choices") or []
+    if choices:
+        completion_text = choices[0].get("message", {}).get("content", "") or ""
+    output_tokens = usage.get("completion_tokens") or count_tokens(completion_text)
+    prompt_tokens = usage.get("prompt_tokens")
+    actual_provider = dict(provider_result).get("provider", req.provider)
+    opt["cost"] = live_cost_report(
+        actual_provider,
+        selected_model,
+        opt["original_tokens"],
+        opt["optimized_tokens"],
+        output_tokens,
+        prompt_tokens,
+    )
+    opt["traces"].update(opt["cost"])
+    opt["traces"]["provider_usage"] = usage
+    opt["traces"]["live_provider"] = actual_provider
     cache_set(key, dict(provider_result), max(0, opt["original_tokens"] - opt["optimized_tokens"]))
     return {"id": opt["request_id"], "object": "chat.completion", "middleware": opt, **provider_result}
 
