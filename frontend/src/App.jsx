@@ -1,4 +1,5 @@
 import { Activity, BarChart3, Database, Gauge, Play, RefreshCw, ShieldCheck, Zap } from "lucide-react";
+import React from "react";
 import { useEffect, useMemo, useState } from "react";
 
 const API_URL = (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
