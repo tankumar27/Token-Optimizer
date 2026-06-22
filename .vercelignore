@@ -1,6 +1,6 @@
 *
-!frontend/
-!frontend/src/
+!frontend
+!frontend/**
 !frontend/src/**
 !frontend/index.html
 !frontend/package.json
@@ -8,6 +8,10 @@
 !frontend/postcss.config.js
 !frontend/tailwind.config.js
 !frontend/.env.example
+frontend/node_modules
+frontend/node_modules/**
+frontend/dist
+frontend/dist/**
 !package.json
 !vercel.json
 !README.md
