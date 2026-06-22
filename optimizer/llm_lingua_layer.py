@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import os
 from dataclasses import dataclass
 from functools import lru_cache
 
@@ -77,8 +78,28 @@ def llm_lingua_backend(text: str, level: str, provider: str, mode: str) -> tuple
 
     settings = get_settings()
     input_tokens = count_tokens(text)
-    model_allowed = settings.enable_llm_lingua and input_tokens <= settings.llm_lingua_max_input_tokens
-    if settings.enable_llm_lingua and not model_allowed:
+    render_model_disabled = bool(os.getenv("RENDER")) and not settings.enable_render_llm_lingua_model
+    model_allowed = (
+        settings.enable_llm_lingua
+        and not render_model_disabled
+        and input_tokens <= settings.llm_lingua_max_input_tokens
+    )
+    if settings.enable_llm_lingua and render_model_disabled:
+        pre_rejected_traces.append(_trace(
+            original=text,
+            candidate=text,
+            source=settings.llm_lingua_backend,
+            accepted=False,
+            reason="LLMLingua model skipped on Render; set ENABLE_RENDER_LLM_LINGUA_MODEL=1 to enable heavy local model loading",
+            validation={},
+            generator_trace={
+                "generator": settings.llm_lingua_backend,
+                "accepted": False,
+                "reason": "render_model_skip",
+                "input_tokens": input_tokens,
+            },
+        ))
+    elif settings.enable_llm_lingua and not model_allowed:
         pre_rejected_traces.append(_trace(
             original=text,
             candidate=text,

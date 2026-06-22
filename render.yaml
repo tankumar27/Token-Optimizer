@@ -11,6 +11,8 @@ services:
         value: gemini-2.5-flash
       - key: ENABLE_LLM_LINGUA
         value: "1"
+      - key: ENABLE_RENDER_LLM_LINGUA_MODEL
+        value: "0"
       - key: LLM_LINGUA_BACKEND
         value: llmlingua2
       - key: LLM_LINGUA2_DEVICE

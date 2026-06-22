@@ -31,6 +31,7 @@ class Settings(BaseModel):
     llm_lingua2_device: str = Field(default_factory=lambda: os.getenv("LLM_LINGUA2_DEVICE", "cpu"))
     llm_lingua_timeout_seconds: float = Field(default_factory=lambda: float(os.getenv("LLM_LINGUA_TIMEOUT_SECONDS", "20")))
     llm_lingua_max_input_tokens: int = Field(default_factory=lambda: int(os.getenv("LLM_LINGUA_MAX_INPUT_TOKENS", "900")))
+    enable_render_llm_lingua_model: bool = Field(default_factory=lambda: os.getenv("ENABLE_RENDER_LLM_LINGUA_MODEL", "0") == "1")
     default_provider: str = "gemini"
     dry_run_warning: str = (
         "Dry-run validates middleware mechanics only. It does not prove real model output quality."
