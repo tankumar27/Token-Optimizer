@@ -132,19 +132,23 @@ class CheapLayerCompressor:
         accepted: list[dict] = []
         rejected: list[dict] = []
         pairs: list[tuple[float, int, int, float, float]] = []
+        fact_cache = [canonical_fact_keys(sentence) for sentence in sentences]
+        key_cache = [sentence_key(sentence) for sentence in sentences]
         for i in range(len(sentences)):
             for j in range(i + 1, len(sentences)):
-                lex = lexical_similarity(sentences[i], sentences[j])
-                sem = self.validator.similarity(sentences[i], sentences[j])["semantic_similarity"] if self.validator else lex
-                score = max(lex, 0.85 * sem + 0.15 * lex)
-                left_facts = canonical_fact_keys(sentences[i])
-                right_facts = canonical_fact_keys(sentences[j])
-                if left_facts and left_facts == right_facts:
-                    score = max(score, 0.95)
-                elif sentence_key(sentences[i]) != sentence_key(sentences[j]):
+                left_facts = fact_cache[i]
+                right_facts = fact_cache[j]
+                facts_match = bool(left_facts and left_facts == right_facts)
+                keys_match = key_cache[i] == key_cache[j]
+                if not facts_match and not keys_match:
                     # Cheap layer semantic removal is only allowed when facts anchor equivalence.
                     # Unanchored paraphrases go to the smarter downstream semantic layer.
                     continue
+                lex = lexical_similarity(sentences[i], sentences[j])
+                sem = self.validator.similarity(sentences[i], sentences[j])["semantic_similarity"] if self.validator else lex
+                score = max(lex, 0.85 * sem + 0.15 * lex)
+                if facts_match:
+                    score = max(score, 0.95)
                 pairs.append((score, i, j, sem, lex))
         for score, i, j, sem, lex in sorted(pairs, reverse=True):
             if i in removed or j in removed or score < threshold:
