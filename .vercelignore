@@ -1,0 +1,14 @@
+*
+!frontend/
+!frontend/src/
+!frontend/src/**
+!frontend/index.html
+!frontend/package.json
+!frontend/package-lock.json
+!frontend/postcss.config.js
+!frontend/tailwind.config.js
+!frontend/.env.example
+!package.json
+!vercel.json
+!README.md
+!DEPLOYMENT.md

@@ -1,0 +1,16 @@
+.git
+.pytest_cache
+.vercel
+__pycache__
+**/__pycache__
+*.pyc
+*.pyo
+*.log
+.env
+frontend
+node_modules
+backups
+data/*.sqlite3
+data/*.sqlite3-journal
+abstract_*.json
+stress_*.json

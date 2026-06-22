@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: token-optimizer-api
+    env: docker
+    plan: starter
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: GEMINI_MODEL
+        value: gemini-2.5-flash
+      - key: ENABLE_LLM_LINGUA
+        value: "1"
+      - key: LLM_LINGUA_BACKEND
+        value: llmlingua2
+      - key: LLM_LINGUA2_DEVICE
+        value: cpu
+      - key: DATABASE_PATH
+        value: /tmp/app.sqlite3
+      - key: CORS_ORIGINS
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false

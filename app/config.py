@@ -5,16 +5,21 @@ import os
 
 
 def _default_database_path() -> str:
-    if os.getenv("VERCEL"):
+    if os.getenv("VERCEL") or os.getenv("RENDER"):
         return "/tmp/app.sqlite3"
     return "data/app.sqlite3"
+
+
+def _cors_origins() -> list[str]:
+    raw = os.getenv("CORS_ORIGINS", "*")
+    return [origin.strip() for origin in raw.split(",") if origin.strip()] or ["*"]
 
 
 class Settings(BaseModel):
     app_name: str = "AI Cost Optimization Middleware"
     database_path: str = Field(default_factory=lambda: os.getenv("DATABASE_PATH", _default_database_path()))
     request_size_limit_bytes: int = Field(default_factory=lambda: int(os.getenv("REQUEST_SIZE_LIMIT_BYTES", "1000000")))
-    cors_origins: list[str] = ["*"]
+    cors_origins: list[str] = Field(default_factory=_cors_origins)
     gemini_api_key: str | None = Field(default_factory=lambda: os.getenv("GEMINI_API_KEY"))
     gemini_model: str = Field(default_factory=lambda: os.getenv("GEMINI_MODEL", "gemini-2.5-flash"))
     openai_api_key: str | None = Field(default_factory=lambda: os.getenv("OPENAI_API_KEY"))

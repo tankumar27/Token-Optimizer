@@ -1,1 +1,38 @@
-.vercel
+# Python/runtime
+__pycache__/
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+env/
+
+# Secrets/env
+.env
+.env.local
+.env.*.local
+
+# Local deploy state
+.vercel/
+
+# Databases/logs/generated runtime files
+*.log
+data/*.sqlite3
+data/*.sqlite3-journal
+reports/demo_report.html
+
+# Local backups and generated stress artifacts
+backups/
+abstract_*.json
+stress_*.json
+$null
+
+# Frontend
+node_modules/
+frontend/node_modules/
+frontend/dist/
+
+# Model/cache artifacts should never be committed
+.cache/
+huggingface/
+models/
