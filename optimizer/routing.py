@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import re
 
+from app.config import get_settings
+
 
 def route_request(messages: list[object], provider: str, model_override: str | None = None) -> dict:
     text = "\n".join(getattr(message, "content", "") if not isinstance(message, dict) else message.get("content", "") for message in messages)
@@ -20,8 +22,9 @@ def route_request(messages: list[object], provider: str, model_override: str | N
         cheap = "gpt-4o-mini"
         strong = "gpt-4o"
     else:
-        cheap = "gemini-1.5-flash"
-        strong = "gemini-1.5-pro"
+        gemini_model = get_settings().gemini_model
+        cheap = gemini_model
+        strong = gemini_model
     if risk:
         return {"route_decision": "stronger_model", "reason": ", ".join(risk), "selected_model": strong, "estimated_cost_difference": 0.0}
     return {"route_decision": "cheaper_model", "reason": "short low-risk prompt", "selected_model": cheap, "estimated_cost_difference": 0.0}

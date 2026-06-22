@@ -77,11 +77,11 @@ def _messages_to_dict(messages: list[ChatMessage]) -> list[dict[str, str]]:
     return [message.model_dump() for message in messages]
 
 
-def _cache_key(req: OptimizeRequest, optimized_messages: list[ChatMessage]) -> str:
+def _cache_key(req: OptimizeRequest, optimized_messages: list[ChatMessage], selected_model: str) -> str:
     system = "\n".join(m.content for m in req.messages if m.role == "system")
     payload = {
         "provider": req.provider,
-        "model": req.model or settings.gemini_model,
+        "model": selected_model,
         "optimized_prompt_hash": hashlib.sha256(json.dumps(_messages_to_dict(optimized_messages), sort_keys=True).encode()).hexdigest(),
         "system_prompt_hash": hashlib.sha256(system.encode()).hexdigest(),
         "compression_level": req.compression_level,
@@ -177,9 +177,9 @@ async def chat_completions(payload: dict) -> dict:
     selected_model = req.model or opt["route_decision"]["selected_model"]
     system_prompt = "\n".join(m.content for m in req.messages if m.role == "system")
     optimized_prompt = json.dumps(_messages_to_dict(opt["optimized_messages"]), sort_keys=True)
-    key = _cache_key(req, opt["optimized_messages"])
+    key = _cache_key(req, opt["optimized_messages"], selected_model)
     cached = cache_get(key)
-    if cached:
+    if cached and not (req.mode == "live" and cached.get("provider") != req.provider):
         opt["traces"]["cache_hit"] = True
         opt["traces"]["exact_hit"] = True
         return {"id": opt["request_id"], "object": "chat.completion", "middleware": opt, **cached}
@@ -208,7 +208,8 @@ async def chat_completions(payload: dict) -> dict:
     opt["traces"].update(opt["cost"])
     opt["traces"]["provider_usage"] = usage
     opt["traces"]["live_provider"] = actual_provider
-    cache_set(key, dict(provider_result), max(0, opt["original_tokens"] - opt["optimized_tokens"]))
+    if actual_provider == req.provider and not dict(provider_result).get("fallback_reason"):
+        cache_set(key, dict(provider_result), max(0, opt["original_tokens"] - opt["optimized_tokens"]))
     return {"id": opt["request_id"], "object": "chat.completion", "middleware": opt, **provider_result}
 
 
